@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Search, RotateCcw } from 'lucide-react';
-import { getAllMembers } from '@lib/apis/memberApi';
-import { getCommissions, updateCommissions } from '@lib/apis/commissionApi';
-import { services } from '../../data/services';
+import { getAllMembers } from '@/lib/apis';
+import { getCommissions, updateCommissions } from '@/lib/apis';
+import { services } from '@/data/services';
 
 const SchemeManager = () => {
     const [registeredUsers, setRegisteredUsers] = useState([]);
