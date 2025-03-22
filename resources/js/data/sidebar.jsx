@@ -1,5 +1,10 @@
 
 import {ChartPie,Phone,Antenna,Bus,Cog,Building,Code,Drill,CalendarRange  }  from 'lucide-react';
+console.log(import.meta.env.VITE_APP_SERVER);
+const BASE_URL = import.meta.env.VITE_APP_SERVER === "PRODUCTION" ? "https://uat.nikatby.in/admin/public" : "http://127.0.0.1:8000/"
+console.log(BASE_URL);
+
+
 export const sidebarRoutes = [
     {
       id: "dashboard",
@@ -11,7 +16,7 @@ export const sidebarRoutes = [
       id: "recharge",
       title: "Recharge",
       icon: <ChartPie/>,
-      path: "/admin/recharge/dashboard",
+      path: `${BASE_URL}/admin/recharge/dashboard`,
       permissions: ["admin"],
       
     },
@@ -34,7 +39,7 @@ export const sidebarRoutes = [
     {
       id: "lic",
       title: "LIC",
-      path: "/admin/lic",
+      path: `${BASE_URL}/admin/lic`,
       icon: <Code/>,
       permissions: ["admin"],
     },
@@ -48,21 +53,21 @@ export const sidebarRoutes = [
     {
       id: "dmt-bank-2",
       title: "DMT Bank 2",
-      path: "/admin/dmt-bank-2",
+      path: `${BASE_URL}/admin/dmt-bank-2`,
       icon: <Building/>,
       permissions: ["admin"],
     },
     {
       id: "utilities",
       title: "Utilities",
-      path: "/admin/utilities",
+      path: `${BASE_URL}/admin/utilities`,
       icon: <Drill />,
       permissions: ["admin"],
       subMenu: [
         {
           id: "utilities-billpayments",
           title: "Bill Payments",
-          path: "/admin/utilities/bill-payment",
+          path: `${BASE_URL}/admin/utilities/bill-payment`,
           permissions: ["admin"],
         },
         // {
@@ -75,20 +80,20 @@ export const sidebarRoutes = [
         {
           id: "utilities-fastagrecharge",
           title: "Fastag Recharge",
-          path: "/admin/utilities/fastag-recharge",
+          path: `${BASE_URL}/admin/utilities/fastag-recharge`,
           permissions: ["admin"],
         }
         ,
         {
           id: "utilities-lpgbooking",
           title: "LPG Booking and Payment",
-          path: "/admin/utilities/lpg-booking",
+          path: `${BASE_URL}/admin/utilities/lpg-booking`,
           permissions: ["admin"],
         },
         {
           id: "utilities-municipalitypayment",
           title: "Municipality Payment",
-          path: "/admin/utilities/municipality-payment",
+          path: `${BASE_URL}/admin/utilities/municipality-payment`,
           permissions: ["admin"],
         }
 
@@ -97,7 +102,7 @@ export const sidebarRoutes = [
     {
       id: "role&permission",
       title: "Roles & Permission",
-      path: "/admin/displaypermissions",
+      path: `${BASE_URL}/admin/displaypermissions`,
       icon: <Cog />,
       permissions: ["admin"],
       subMenu: [
@@ -105,14 +110,14 @@ export const sidebarRoutes = [
           id: "roles",
           title: "Roles",
           icon: <Cog />,
-          path: "/admin/displayroles",
+          path: `${BASE_URL}/admin/displayroles`,
           permissions: ["admin"],
         },
         {
           id: "permissions",
           title: "Permissions",
           icon: <Phone />,
-          path: "/admin/displaypermissions",
+          path: `${BASE_URL}/admin/displaypermissions`,
           permissions: ["admin"],
         }
       ]
@@ -120,14 +125,14 @@ export const sidebarRoutes = [
     {
       id: "commision",
       title: "Commission",
-      path: "/admin/commission",
+      path: `${BASE_URL}/admin/commission`,
       icon: <CalendarRange  />,
       permissions: ["admin"],
     },
     {
       id: "memberdetails",
       title: "Member Details",
-      path: "/admin/members",
+      path: `${BASE_URL}/admin/members`,
       icon: <CalendarRange  />,
       permissions: ["admin"],
     }
