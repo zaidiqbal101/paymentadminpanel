@@ -28,9 +28,6 @@ class MainController extends Controller
 
     }
 
-  
-
-
     public function displaypermissions(){
         return Inertia::render('Admin/roles&permissions/permissions');
     }
@@ -179,7 +176,5 @@ public function deleteRole($id)
     $role->delete();
     return response()->json(['message' => 'Role deleted successfully']);
 }
-
-
 
 }

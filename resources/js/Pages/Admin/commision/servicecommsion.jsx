@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Search, RotateCcw } from 'lucide-react';
-import { getAllMembers } from '@/lib/apis';
-import { getCommissions, updateCommissions } from '@/lib/apis';
+import { getAllMembers } from '@lib/apis/memberApi';
+import { getCommissions, updateCommissions } from '@lib/apis/commissionApi';
 import { services } from '../../data/services';
 
 const SchemeManager = () => {
@@ -22,7 +22,6 @@ const SchemeManager = () => {
         recharge_commissions: [],
         utility_commissions: [],
     });
-    const [changedData, setChangedData] = useState({});
 
     useEffect(() => {
         const fetchUsers = async () => {
@@ -39,12 +38,14 @@ const SchemeManager = () => {
 
     const filterUsers = (users, search, from, to, status) => {
         let filtered = [...users];
+
         if (search) {
             filtered = filtered.filter(item =>
                 item.name.toLowerCase().includes(search.toLowerCase()) ||
                 item.email.toLowerCase().includes(search.toLowerCase())
             );
         }
+
         if (from && to) {
             const fromDate = new Date(from);
             const toDate = new Date(to);
@@ -54,9 +55,11 @@ const SchemeManager = () => {
                 return itemDate >= fromDate && itemDate <= toDate;
             });
         }
+
         if (status) {
             // Add status filtering logic if you have a status field
         }
+
         setFilteredUsers(filtered);
     };
 
@@ -76,7 +79,6 @@ const SchemeManager = () => {
         setSelectedUserId(userId);
         setShowCommissionDropdown(!showCommissionDropdown);
         setSelectedCommissionType(null);
-        setChangedData({});
 
         try {
             const data = await getCommissions(userId);
@@ -96,12 +98,9 @@ const SchemeManager = () => {
     const handleCommissionTypeSelect = (service) => {
         setSelectedCommissionType(service);
         setShowCommissionDropdown(false);
-        setChangedData({});
     };
 
     const handleCommissionChange = (commissionId, field, value) => {
-        const numericValue = value === '' ? 0 : parseFloat(value) || 0;
-
         setCommissions((prev) => {
             const updatedCommissions = { ...prev };
             const commissionType = getCommissionType(selectedCommissionType.id);
@@ -112,34 +111,8 @@ const SchemeManager = () => {
             if (commissionIndex !== -1) {
                 updatedCommissions[commissionType][commissionIndex] = {
                     ...updatedCommissions[commissionType][commissionIndex],
-                    [field]: numericValue,
+                    [field]: value,
                 };
-
-                setChangedData((prevChanged) => {
-                    const updatedChanged = { ...prevChanged };
-                    if (!updatedChanged[commissionType]) {
-                        updatedChanged[commissionType] = [];
-                    }
-
-                    const existingIndex = updatedChanged[commissionType].findIndex(
-                        (item) => item.id === commissionId
-                    );
-
-                    if (existingIndex !== -1) {
-                        updatedChanged[commissionType][existingIndex] = {
-                            ...updatedChanged[commissionType][existingIndex],
-                            id: commissionId,
-                            [field]: numericValue,
-                        };
-                    } else {
-                        updatedChanged[commissionType].push({
-                            id: commissionId,
-                            [field]: numericValue,
-                        });
-                    }
-
-                    return updatedChanged;
-                });
             }
 
             return updatedCommissions;
@@ -147,15 +120,9 @@ const SchemeManager = () => {
     };
 
     const handleSave = async () => {
-        if (Object.keys(changedData).length === 0) {
-            alert('No changes to save.');
-            return;
-        }
-
         try {
-            await updateCommissions(selectedUserId, changedData);
+            await updateCommissions(selectedUserId, commissions);
             alert('Commissions updated successfully!');
-            setChangedData({});
         } catch (error) {
             alert('Failed to update commissions: ' + error.message);
         }
@@ -174,8 +141,6 @@ const SchemeManager = () => {
                 return 'bank_commissions';
             case 'utilities':
                 return 'utility_commissions';
-            case 'gas-fastag':
-                return 'gas_fastag_commissions';
             default:
                 return '';
         }
@@ -224,8 +189,6 @@ const SchemeManager = () => {
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                         <input
                                             type="number"
-                                            min="0"
-                                            step="0.01"
                                             value={item.server_1_commission}
                                             onChange={(e) =>
                                                 handleCommissionChange(
@@ -240,8 +203,6 @@ const SchemeManager = () => {
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                         <input
                                             type="number"
-                                            min="0"
-                                            step="0.01"
                                             value={item.server_2_commission}
                                             onChange={(e) =>
                                                 handleCommissionChange(
@@ -299,8 +260,6 @@ const SchemeManager = () => {
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                         <input
                                             type="number"
-                                            min="0"
-                                            step="0.01"
                                             value={item.Commission}
                                             onChange={(e) =>
                                                 handleCommissionChange(
@@ -358,8 +317,6 @@ const SchemeManager = () => {
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                         <input
                                             type="number"
-                                            min="0"
-                                            step="0.01"
                                             value={item.commission}
                                             onChange={(e) =>
                                                 handleCommissionChange(
@@ -423,73 +380,6 @@ const SchemeManager = () => {
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                         <input
                                             type="number"
-                                            min="0"
-                                            step="0.01"
-                                            value={item.commission}
-                                            onChange={(e) =>
-                                                handleCommissionChange(
-                                                    item.id,
-                                                    'commission',
-                                                    e.target.value
-                                                )
-                                            }
-                                            className="border rounded p-1 w-20"
-                                        />
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                    <div className="mt-4 flex justify-end">
-                        <button
-                            onClick={handleSave}
-                            className="px-4 py-2 bg-blue-600 text-white rounded"
-                        >
-                            Save Changes
-                        </button>
-                    </div>
-                </div>
-            );
-        }
-
-        if (selectedCommissionType.id === 'gas-fastag') {
-            return (
-                <div className="mt-6">
-                    <h3 className="text-lg font-semibold mb-4">{selectedCommissionType.title} Commissions</h3>
-                    <table className="min-w-full divide-y divide-gray-200">
-                        <thead className="bg-gray-50">
-                            <tr>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Operator Name
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Category
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Type
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Commission
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody className="bg-white divide-y divide-gray-200">
-                            {commissionData.map((item) => (
-                                <tr key={item.id}>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                        {item.operator_name}
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                        {item.category}
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                        {item.type}
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                        <input
-                                            type="number"
-                                            min="0"
-                                            step="0.01"
                                             value={item.commission}
                                             onChange={(e) =>
                                                 handleCommissionChange(
@@ -521,8 +411,8 @@ const SchemeManager = () => {
     };
 
     return (
-        <div className="p-6 max-h-screen">
-            <h1 className="text-2xl font-bold mb-4">Home - Commission Manager</h1>
+        <div className="p-6">
+            <h1 className="text-2xl font-bold mb-4">Home - Scheme Manager</h1>
             <div className="bg-gray-200 p-4 rounded-b-lg">
                 <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-3">
@@ -565,11 +455,15 @@ const SchemeManager = () => {
                     </div>
                 </div>
             </div>
-        
+
             <div className="bg-white p-4 rounded-lg shadow-md mt-4">
                 <div className="flex items-center justify-between mb-4">
-                    <h2 className="text-lg font-semibold">Commissions</h2>
-                    {/* Removed the "Add New" button since users are added via a separate form */}
+                    <h2 className="text-lg font-semibold">Scheme Manager</h2>
+                    <button
+                        className="px-4 py-2 bg-blue-600 text-white rounded"
+                    >
+                        + Add New
+                    </button>
                 </div>
 
                 <div className="overflow-x-auto">
@@ -611,7 +505,7 @@ const SchemeManager = () => {
                                                 <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
                                             </label>
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 relative">
                                             <button
                                                 className="px-3 py-1 bg-gray-500 text-white rounded mr-2"
                                                 onClick={() => {}}
@@ -624,7 +518,7 @@ const SchemeManager = () => {
                                             >
                                                 View Commission
                                             </button>
-                                            <div className="relative inline-block">
+                                            <div className="inline-block">
                                                 <button
                                                     className="px-3 py-1 bg-green-500 text-white rounded"
                                                     onClick={() => handleCommissionClick(user.id)}
@@ -632,7 +526,7 @@ const SchemeManager = () => {
                                                     Commission
                                                 </button>
                                                 {selectedUserId === user.id && showCommissionDropdown && (
-                                                    <div className="absolute mt-2 w-48 bg-white border rounded shadow-lg z-[1000] right-0">
+                                                    <div className="absolute mt-2 w-48 bg-white border rounded shadow-lg z-10">
                                                         {services.map((service) => (
                                                             <button
                                                                 key={service.id}

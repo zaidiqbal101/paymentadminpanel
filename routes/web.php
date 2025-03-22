@@ -3,6 +3,12 @@
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\MainController;
+use App\Http\Controllers\DMTbankController;
+use App\Http\Controllers\LicController;
+use App\Http\Controllers\UtilitiesController;
+use App\Http\Controllers\CommissionController;
+use App\Http\Controllers\MemberController;
+use App\Http\Controllers\CMSController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -11,6 +17,12 @@ Route::get('/',[AdminController::class,'dashboard'])->name('admin.recharge');
 
 
 
+
+Route::post('/login', [AuthController::class, 'login']);
+Route::middleware('auth:web')->group(function () {
+    Route::post('/logout', [AuthController::class, 'logout']);
+    Route::get('/user', [AuthController::class, 'getAuthenticatedUser']);
+});
 
 Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');
@@ -22,6 +34,17 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
+// Member routes
+Route::get('/admin/members', [MemberController::class, 'memberdashboard'])->name('admin.members');
+Route::post('/admin/member/fetchdetails', [MemberController::class, 'fetchmember'])->name('admin.memberdetails');
+Route::post('/admin/member/add', [MemberController::class, 'addMember'])->name('admin.member.add');
+Route::delete('/admin/member/delete/{id}', [MemberController::class, 'deleteMember'])->name('admin.member.delete');
+
+// Commission routes
+Route::get('/admin/commissions/{userId}', [CommissionController::class, 'getCommissions'])->name('admin.commissions.get');
+Route::post('/admin/commissions/{userId}', [CommissionController::class, 'updateCommissions'])->name('admin.commissions.update');
+
+
 Route::get('/admin/recharge/dashboard',[AdminController::class,'recharge'])->name('admin.recharge');
 Route::post('/admin/recharge',[AdminController::class,'operatorlistfetch'])->name('admin.opeartorlist');
 Route::post('/admin/recharge/transaction',[AdminController::class,'rechargetransaction'])->name('admin.rechargetransaction');
@@ -30,6 +53,14 @@ Route::post('/admin/recharge/transaction',[AdminController::class,'rechargetrans
 Route::get('/admin/commission',[AdminController::class,'commission'])->name('admin.recharge');
 Route::post('/admin/recharge/commission',[AdminController::class,'rechargecommission'])->name('admin.commission');
 Route::put('/admin/update-commission-recharge/{id}', [AdminController::class, 'updateRechargeCommission']);
+
+
+//airtel commission
+Route::get('/admin/cms-airtel',[CMSController::class,'cmsairteldashboard'])->name('admin.airtel');
+Route::post('/admin/cms-airtel-fetch',[CMSController::class,'cms_airtel_fetch'])->name('admin.fetchairtel');
+
+
+
 
 //utility commission
 Route::post('/admin/utility/commission', [AdminController::class, 'fetchUtilityCommission']);
@@ -63,12 +94,38 @@ Route::post('/admin/update/permission/{id}',[MainController::class,'updatepermis
 Route::post('/admin/delete/permission/{id}',[MainController::class,'deletepermission'])->name('admin.deletepermission');
 
 
-//  Roles
+//Roles
 Route::get('/admin/displayroles',[MainController::class,'displayroles'])->name('admin.roles');
 Route::post('/admin/roles', [MainController::class, 'getRoles']); // Fetch all roles
 Route::post('/admin/addnew/role', [MainController::class, 'addRole']); // Add a new role
 Route::post('/admin/update/role/{id}', [MainController::class, 'updateRole']); // Update a role
 Route::post('/admin/delete/role/{id}', [MainController::class, 'deleteRole']); // Delete a role
 Route::post('/admin/role/{id}/permissions', [MainController::class, 'updateRolePermissions']); // Update role permissions
+
+
+//DMT1
+Route::get('/admin/dmt-bank-2',[DMTbankController::class,'dmt2dashboard'])->name('admin.dmt1dashboard');
+Route::post('/admin/dmt-bank-2/fetchdata',[DMTbankController::class,'fetchdmt2'])->name('admin.dmt1dashboard');
+
+
+//LIC
+
+Route::get('/admin/lic',[LicController::class,'licdashboard'])->name('admin.licdashboard');
+Route::post('/admin/licdata',[LicController::class,'fetchlicdata'])->name('admin.fetchlicdata');
+
+//Utilities Dashboard API
+
+Route::get('/admin/utilities/bill-payment',[UtilitiesController::class,'billpaymentdashboard'])->name('admin.bill-payment');
+Route::post('/admin/utilities/bill-payment-data',[UtilitiesController::class,'billpaymentdata'])->name('admin.bill-payment');
+Route::get('/admin/utilities/insurance-payment',[UtilitiesController::class,'insurancepaymentdashboard'])->name('admin.bill-payment');
+Route::post('/admin/utilities/insurance-payment-data',[UtilitiesController::class,'insurancepaymentdata'])->name('admin.bill-payment');
+Route::get('/admin/utilities/fastag-recharge',[UtilitiesController::class,'fastagrechargedashboard'])->name('admin.bill-payment');
+Route::post('/admin/utilities/fastag-recharge-data',[UtilitiesController::class,'fastagrechargedata'])->name('admin.bill-payment');
+Route::get('/admin/utilities/lpg-booking',[UtilitiesController::class,'lpgbookingdashboard'])->name('admin.bill-payment');
+Route::post('/admin/utilities/lpg-booking-data',[UtilitiesController::class,'lpgbookingdata'])->name('admin.bill-payment');
+Route::get('/admin/utilities/municipality-payment',[UtilitiesController::class,'municipalitypaymentdashboard'])->name('admin.bill-payment');
+Route::post('/admin/utilities/municipality-payment-data',[UtilitiesController::class,'municipalitypaymentdata'])->name('admin.bill-payment');
+
+
 
 require __DIR__.'/auth.php';

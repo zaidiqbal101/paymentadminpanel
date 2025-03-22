@@ -15,49 +15,36 @@ export const sidebarRoutes = [
       permissions: ["admin"],
       
     },
-    {
-      id: "cms-airtel",
-      title: "CMS-Airtel",
-      path: "/admin/cms-airtel",
-      icon: <Antenna/>,
-      permissions: ["admin"],
-      subMenu: [
-        {
-          id: "cms-airtel-transactions",
-          title: "Transactions",
-          path: "/admin/cms-airtel/transactions",
-          permissions: ["admin"],
-        },
-        {
-          id: "cms-airtel-operators",
-          title: "Operators",
-          path: "/admin/cms-airtel/operators",
-          permissions: ["admin"],
-        }
-      ]
-    },
-    {
-      id: "bus-booking",
-      title: "Bus Booking",
-      path: "/admin/bus-booking",
-      icon: <Bus/>,
-      permissions: ["admin"],
-    },
+    // {
+    //   id: "cms-airtel",
+    //   title: "CMS-Airtel",
+    //   path: "/admin/cms-airtel",
+    //   icon: <Antenna/>,
+    //   permissions: ["admin"],
+    
+    // },
+    // {
+    //   id: "bus-booking",
+    //   title: "Bus Booking",
+    //   path: "/admin/bus-booking",
+    //   icon: <Bus/>,
+    //   permissions: ["admin"],
+    // },
    
     {
-      id: "api",
-      title: "API",
-      path: "/admin/api",
+      id: "lic",
+      title: "LIC",
+      path: "/admin/lic",
       icon: <Code/>,
       permissions: ["admin"],
     },
-    {
-      id: "dmt-bank-1",
-      title: "DMT Bank 1",
-      path: "/admin/dmt-bank-1",
-      icon: <Building/>,
-      permissions: ["admin"],
-    },
+    // {
+    //   id: "dmt-bank-1",
+    //   title: "DMT Bank 1",
+    //   path: "/admin/dmt-bank-1",
+    //   icon: <Building/>,
+    //   permissions: ["admin"],
+    // },
     {
       id: "dmt-bank-2",
       title: "DMT Bank 2",
@@ -71,6 +58,41 @@ export const sidebarRoutes = [
       path: "/admin/utilities",
       icon: <Drill />,
       permissions: ["admin"],
+      subMenu: [
+        {
+          id: "utilities-billpayments",
+          title: "Bill Payments",
+          path: "/admin/utilities/bill-payment",
+          permissions: ["admin"],
+        },
+        // {
+        //   id: "utilities-insurancepayments",
+        //   title: "Insurance Payment",
+        //   path: "/admin/utilities/insurance-payment",
+        //   permissions: ["admin"],
+        // }
+        // ,
+        {
+          id: "utilities-fastagrecharge",
+          title: "Fastag Recharge",
+          path: "/admin/utilities/fastag-recharge",
+          permissions: ["admin"],
+        }
+        ,
+        {
+          id: "utilities-lpgbooking",
+          title: "LPG Booking and Payment",
+          path: "/admin/utilities/lpg-booking",
+          permissions: ["admin"],
+        },
+        {
+          id: "utilities-municipalitypayment",
+          title: "Municipality Payment",
+          path: "/admin/utilities/municipality-payment",
+          permissions: ["admin"],
+        }
+
+      ]
     },
     {
       id: "role&permission",
@@ -99,6 +121,13 @@ export const sidebarRoutes = [
       id: "commision",
       title: "Commission",
       path: "/admin/commission",
+      icon: <CalendarRange  />,
+      permissions: ["admin"],
+    },
+    {
+      id: "memberdetails",
+      title: "Member Details",
+      path: "/admin/members",
       icon: <CalendarRange  />,
       permissions: ["admin"],
     }

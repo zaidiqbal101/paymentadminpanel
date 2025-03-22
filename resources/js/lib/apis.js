@@ -52,6 +52,15 @@ import axios from 'axios';
   };
 
 
+//cms airtel api
+
+export const fetchAllCMSAirtel= async()=>{
+  const response = await axios.post('/admin/cms-airtel-fetch');
+  console.log(response.data );
+  return response;
+}
+
+
 //utility api
 
   export const utilityList= async()=>{
@@ -160,6 +169,8 @@ export const UpdateBankCommission = async (id, updatedData) => {
     throw error;
   }
 };
+
+
 
 
 ///beneficiary 
@@ -304,3 +315,122 @@ export async function updateRolePermissions(roleId, permissionIds) {
     throw error;
   }
 }
+
+
+//dmt banks
+export async function getdmtbank2data() {
+  try {
+    const res = await axios.post('/admin/dmt-bank-2/fetchdata');
+    return res.data.data;
+  } catch (error) {
+    console.error('Error fetching roles:', error.response?.data || error.message);
+    throw error;
+  }
+}
+
+export async function getlicdata(){
+  try {
+    const res = await axios.post('/admin/licdata');
+    return res.data.data;
+  } catch (error) {
+    console.error('Error fetching roles:', error.response?.data || error.message);
+    throw error;
+  }
+}
+export async function getMunicipalitydata(){
+  try {
+    const res = await axios.post('/admin/utilities/municipality-payment-data');
+    return res.data.data;
+  } catch (error) {
+    console.error('Error fetching roles:', error.response?.data || error.message);
+    throw error;
+  }
+}
+export async function getBillpaymentdata(){
+  try {
+    const res = await axios.post('/admin/utilities/bill-payment-data');
+    return res.data.data;
+  } catch (error) {
+    console.error('Error fetching roles:', error.response?.data || error.message);
+    throw error;
+  }
+}
+export async function getLPGdata(){
+  try {
+    const res = await axios.post('/admin/utilities/lpg-booking-data');
+    return res.data.data;
+  } catch (error) {
+    console.error('Error fetching roles:', error.response?.data || error.message);
+    throw error;
+  }
+}
+export async function getInsurancedata(){
+  try {
+    const res = await axios.post('/admin/utilities/insurance-payment-data');
+    return res.data.data;
+  } catch (error) {
+    console.error('Error fetching roles:', error.response?.data || error.message);
+    throw error;
+  }
+}
+export async function getFastagdata(){
+  try {
+    const res = await axios.post('/admin/utilities/fastag-recharge-data');
+    return res.data.data;
+  } catch (error) {
+    console.error('Error fetching roles:', error.response?.data || error.message);
+    throw error;
+  }
+}
+
+//members details
+
+export const getAllMembers = async () => {
+  try {
+      const response = await axios.post('/admin/member/fetchdetails');
+      return response.data;
+  } catch (error) {
+      console.error('Error fetching members:', error);
+      throw error;
+  }
+};
+
+export const addMember = async (memberData) => {
+  try {
+      const response = await axios.post('/admin/member/add', memberData);
+      return response.data;
+  } catch (error) {
+      console.error('Error adding member:', error);
+      throw error;
+  }
+};
+
+export const deleteMember = async (id, userType) => {
+  try {
+      const response = await axios.delete(`/admin/member/delete/${id}`, {
+          data: { user_type: userType }, // Pass user_type in the request body
+      });
+      return response.data;
+  } catch (error) {
+      console.error('Error deleting member:', error);
+      throw error;
+  }
+};
+export const getCommissions = async (userId) => {
+  try {
+      const response = await axios.get(`/admin/commissions/${userId}`);
+      return response.data;
+  } catch (error) {
+      throw new Error(error.response?.data?.error || 'Failed to fetch commissions');
+  }
+};
+
+// Update commissions for a user
+export const updateCommissions = async (userId, commissions) => {
+  try {
+      const response = await axios.post(`/admin/commissions/${userId}`, commissions);
+      return response.data;
+  } catch (error) {
+      throw new Error(error.response?.data?.error || 'Failed to update commissions');
+  }
+};

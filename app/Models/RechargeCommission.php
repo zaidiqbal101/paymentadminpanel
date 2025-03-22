@@ -6,10 +6,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class RechargeCommission extends Model
 {
-
     protected $table = 'recharge_commission';
 
-    public $timestamps = true; 
+    public $timestamps = true; // Enable timestamps
 
     protected $fillable = [
         'id',
@@ -17,6 +16,14 @@ class RechargeCommission extends Model
         'operator_name',
         'server_1_commission',
         'server_2_commission',
-        'category'
+        'category',
+        'user_id',
+        'created_at', 
+        'updated_at',
     ];
+
+    public function user()
+    {
+        return $this->belongsTo(RegisteredUser::class, 'user_id');
+    }
 }
