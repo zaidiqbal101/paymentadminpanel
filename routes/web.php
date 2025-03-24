@@ -8,6 +8,7 @@ use App\Http\Controllers\LicController;
 use App\Http\Controllers\UtilitiesController;
 use App\Http\Controllers\CommissionController;
 use App\Http\Controllers\MemberController;
+use App\Http\Controllers\BankController;
 use App\Http\Controllers\CMSController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -39,6 +40,14 @@ Route::get('/admin/members', [MemberController::class, 'memberdashboard'])->name
 Route::post('/admin/member/fetchdetails', [MemberController::class, 'fetchmember'])->name('admin.memberdetails');
 Route::post('/admin/member/add', [MemberController::class, 'addMember'])->name('admin.member.add');
 Route::delete('/admin/member/delete/{id}', [MemberController::class, 'deleteMember'])->name('admin.member.delete');
+
+// bank details
+Route::get('/admin/bank', [BankController::class, 'bankdashboard'])->name('admin.bank');
+Route::post('/admin/bank/fetchbankdetails', [BankController::class, 'fetchbankdetails'])->name('admin.bankdetails');
+Route::post('/admin/bank/activate', [BankController::class, 'activateBank']);
+Route::post('/admin/bank/deactivate', [BankController::class, 'deactivateBank']);
+
+
 
 // Commission routes
 Route::get('/admin/commissions/{userId}', [CommissionController::class, 'getCommissions'])->name('admin.commissions.get');

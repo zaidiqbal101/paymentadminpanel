@@ -4,14 +4,13 @@ namespace App\Http\Controllers;
 
 use Inertia\Inertia;
 use App\Models\User;
-use App\Models\ApiPartner;
-use App\Models\RegisteredUser;
-use App\Models\DeactivatedUser;
+use App\Models\Roles;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Mail;
-use App\Mail\WelcomeEmail; // We'll create this mailable
+use App\Mail\WelcomeEmail;
+use Illuminate\Support\Facades\Log;
 
 class MemberController extends Controller
 {
@@ -22,29 +21,47 @@ class MemberController extends Controller
 
     public function fetchmember(Request $request)
     {
-        $admins = User::all();
-        $apiPartners = ApiPartner::all();
-        $registeredUsers = RegisteredUser::all();
-        $deactivatedUsers = DeactivatedUser::all();
+        // Fetch all roles from the Roles model
+        $roles = Roles::all();
+        $roleMap = $roles->pluck('name', 'id')->toArray();
+        Log::info('Roles fetched from Roles model:', ['roles' => $roleMap]);
 
-        return response()->json([
-            'admins' => $admins,
-            'api_partners' => $apiPartners,
-            'registered_users' => $registeredUsers,
-            'deactivated_users' => $deactivatedUsers,
-        ], 200);
+        // Fetch all users
+        $users = User::all();
+        Log::info('Users fetched:', ['users' => $users->toArray()]);
+
+        // Map numeric role IDs to role names
+        $users = $users->map(function ($user) use ($roleMap) {
+            $roleName = isset($roleMap[$user->role]) ? $roleMap[$user->role] : 'unknown';
+            $user->role_name = $roleName;
+            return $user;
+        });
+
+        Log::info('Users with role names:', ['users' => $users->toArray()]);
+
+        // Group users by their role names
+        $data = [];
+        foreach ($roleMap as $roleId => $roleName) {
+            $key = strtolower($roleName) . 's'; // e.g., "admins", "apiusers", "retailers"
+            $data[$key] = $users->where('role_name', $roleName)->values();
+        }
+
+        Log::info('Grouped data:', ['data' => $data]);
+
+        return response()->json($data, 200);
     }
-
     public function addMember(Request $request)
     {
-        // Validation rules
+        Log::info('Request data received:', $request->all());
+    
+        $roleNames = Roles::pluck('name')->toArray();
+        Log::info('Role names for validation:', ['roleNames' => $roleNames]);
+    
         $validated = $request->validate([
-            'user_type' => 'required|in:ADMIN,API_PARTNER,REGISTERED_USER,DEACTIVATED_USER',
+            'role' => 'required|in:' . implode(',', $roleNames),
             'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email|unique:api_partners,email|unique:registered_users,email|unique:deactivated_users,email',
+            'email' => 'required|email|unique:users,email',
             'company' => 'nullable|string|max:255',
-            'parent' => 'nullable|string|max:255',
-            'shop_name' => 'nullable|string|max:255',
             'pancard_number' => 'nullable|string|max:20',
             'aadhaar_number' => 'nullable|string|max:20',
             'mobile' => 'nullable|string|max:15',
@@ -52,46 +69,43 @@ class MemberController extends Controller
             'state' => 'nullable|string|max:100',
             'city' => 'nullable|string|max:100',
             'pincode' => 'nullable|string|max:10',
-            'api_key' => 'nullable|string|max:255',
-            'deactivation_reason' => 'nullable|string',
         ]);
-
-        $data = $request->all();
-
+    
         try {
-            $member = null;
+            // Create a copy of the request data
+            $data = $request->all();
+            
+            // Find role ID by name
+            $role = Roles::whereRaw('LOWER(name) = ?', [strtolower($validated['role'])])->first();
+            
+            if (!$role) {
+                Log::warning('Invalid role selected, defaulting to role ID 0', ['role' => $validated['role']]);
+                $roleId = 0; // Default role ID if mapping fails
+            } else {
+                $roleId = $role->id;
+                Log::info('Mapped role ID:', ['role_id' => $roleId]);
+            }
+            
+            // Explicitly set the role ID in the data array
+            $data['role'] = $roleId;
+            
             $generatedPassword = null;
-
-            // Generate a random password for user types that need to log in
-            if (in_array($validated['user_type'], ['ADMIN', 'API_PARTNER', 'REGISTERED_USER'])) {
-                $generatedPassword = Str::upper(Str::random(4)) . rand(1000, 9999) . Str::upper(Str::random(4)); // e.g., ABCD1234EFGH
-                $data['password'] = Hash::make($generatedPassword); // Hash the password
+    
+            if ($validated['role'] !== 'deactivated') {
+                $generatedPassword = Str::upper(Str::random(4)) . rand(1000, 9999) . Str::upper(Str::random(4));
+                $data['password'] = Hash::make($generatedPassword);
             }
-
-            switch ($validated['user_type']) {
-                case 'ADMIN':
-                    $member = User::create($data);
-                    break;
-                case 'API_PARTNER':
-                    $member = ApiPartner::create($data);
-                    break;
-                case 'REGISTERED_USER':
-                    $member = RegisteredUser::create($data);
-                    break;
-                case 'DEACTIVATED_USER':
-                    $data['original_user_type'] = $request->input('original_user_type', 'UNKNOWN');
-                    $member = DeactivatedUser::create($data);
-                    break;
-                default:
-                    return response()->json(['error' => 'Invalid user type'], 400);
-            }
-
-            // Send welcome email if a password was generated
+    
+            // Debug what we're about to save
+            Log::info('Data being saved to User model:', $data);
+            
+            $member = User::create($data);
+            Log::info('User created:', $member->toArray());
+    
             if ($generatedPassword) {
                 Mail::to($member->email)->send(new WelcomeEmail($member, $generatedPassword));
             }
-
-            // Include the generated password in the response
+    
             $responseData = [
                 'message' => 'Member added successfully',
                 'data' => $member,
@@ -99,48 +113,39 @@ class MemberController extends Controller
             if ($generatedPassword) {
                 $responseData['generated_password'] = $generatedPassword;
             }
-
+    
             return response()->json($responseData, 201);
         } catch (\Exception $e) {
             \Log::error("Failed to add member: " . $e->getMessage());
             return response()->json(['error' => 'Failed to add member: ' . $e->getMessage()], 500);
         }
     }
-
     public function deleteMember(Request $request, $id)
     {
-        $userType = $request->input('user_type');
         $mainAdminId = 1;
 
         try {
-            $member = null;
-            $originalUserType = '';
+            $member = User::findOrFail($id);
 
-            switch ($userType) {
-                case 'ADMIN':
-                    $member = User::findOrFail($id);
-                    if ($member->id === $mainAdminId) {
-                        return response()->json(['error' => 'Cannot deactivate the main admin'], 403);
-                    }
-                    $originalUserType = 'ADMIN';
-                    break;
-                case 'API_PARTNER':
-                    $member = ApiPartner::findOrFail($id);
-                    $originalUserType = 'API_PARTNER';
-                    break;
-                case 'REGISTERED_USER':
-                    $member = RegisteredUser::findOrFail($id);
-                    $originalUserType = 'REGISTERED_USER';
-                    break;
-                default:
-                    return response()->json(['error' => 'Invalid user type'], 400);
+            // Fetch role names to check if the user is an admin
+            $roles = Roles::pluck('name', 'id')->toArray();
+            $roleName = isset($roles[$member->role]) ? $roles[$member->role] : 'unknown';
+
+            if ($roleName === 'admin' && $member->id === $mainAdminId) {
+                return response()->json(['error' => 'Cannot deactivate the main admin'], 403);
             }
 
-            $memberData = $member->toArray();
-            $memberData['original_user_type'] = $originalUserType;
-            $memberData['deactivation_reason'] = $request->input('deactivation_reason', 'Deactivated on ' . now());
-            DeactivatedUser::create($memberData);
-            $member->delete();
+            // Fetch the ID of the 'deactivated' role
+            $deactivatedRole = Roles::where('name', 'deactivated')->first();
+            if (!$deactivatedRole) {
+                throw new \Exception('Deactivated role not found');
+            }
+
+            if ($member->role != $deactivatedRole->id) {
+                $member->role = $deactivatedRole->id;
+                $member->deactivation_reason = $request->input('deactivation_reason', 'Deactivated on ' . now());
+                $member->save();
+            }
 
             return response()->json(['message' => 'Member deactivated successfully'], 200);
         } catch (\Exception $e) {

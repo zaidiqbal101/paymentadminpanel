@@ -1,7 +1,7 @@
 
 import {ChartPie,Phone,Antenna,Bus,Cog,Building,Code,Drill,CalendarRange  }  from 'lucide-react';
 console.log(import.meta.env.VITE_APP_SERVER);
-const BASE_URL = import.meta.env.VITE_APP_SERVER === "PRODUCTION" ? "https://uat.nikatby.in/admin/public" : "http://127.0.0.1:8000/"
+const BASE_URL = import.meta.env.VITE_APP_SERVER === "PRODUCTION" ? "https://uat.nikatby.in/admin/public" : "http://127.0.0.1:8000"
 console.log(BASE_URL);
 
 
@@ -133,6 +133,13 @@ export const sidebarRoutes = [
       id: "memberdetails",
       title: "Member Details",
       path: `${BASE_URL}/admin/members`,
+      icon: <CalendarRange  />,
+      permissions: ["admin"],
+    },
+    {
+      id: "bankdetails",
+      title: "Bank Details",
+      path: `${BASE_URL}/admin/bank`,
       icon: <CalendarRange  />,
       permissions: ["admin"],
     }

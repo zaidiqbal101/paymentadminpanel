@@ -1,32 +1,25 @@
 import React, { useState, useEffect } from 'react';
 import { Search, RotateCcw, FileText } from 'lucide-react';
-import { getAllMembers, addMember, deleteMember } from '@/lib/apis';
+import { getRoles, getAllMembers, addMember, deleteMember } from '@/lib/apis';
 
 const MemberDetails = () => {
-    const [activeTab, setActiveTab] = useState('ADMIN');
-    const [allData, setAllData] = useState({
-        admins: [],
-        api_partners: [],
-        registered_users: [],
-        deactivated_users: [],
-    });
+    const [roles, setRoles] = useState([]);
+    const [activeTab, setActiveTab] = useState('');
+    const [allData, setAllData] = useState({});
     const [filteredData, setFilteredData] = useState([]);
     const [searchValue, setSearchValue] = useState('');
     const [fromDate, setFromDate] = useState('');
     const [toDate, setToDate] = useState('');
     const [company, setCompany] = useState('');
     const [showForm, setShowForm] = useState(false);
-    const [generatedPassword, setGeneratedPassword] = useState(null); // State for generated password
-    const [error, setError] = useState(null); // State for errors
+    const [generatedPassword, setGeneratedPassword] = useState(null);
+    const [error, setError] = useState(null);
 
-    // Single form state for all user types
     const [formData, setFormData] = useState({
-        user_type: 'ADMIN',
+        role: '',
         name: '',
         email: '',
         company: '',
-        parent: '',
-        shop_name: '',
         pancard_number: '',
         aadhaar_number: '',
         mobile: '',
@@ -34,37 +27,47 @@ const MemberDetails = () => {
         state: '',
         city: '',
         pincode: '',
-        api_key: '',
-        deactivation_reason: '',
+        otp_verifaction: 0,
     });
 
     useEffect(() => {
-        const fetchData = async () => {
+        const fetchRolesAndData = async () => {
             try {
+                // Fetch roles dynamically
+                const fetchedRoles = await getRoles();
+                const roleNames = fetchedRoles.map(role => role.name);
+                console.log('Fetched roles:', roleNames); // Debug log
+                setRoles(roleNames);
+
+                if (roleNames.length > 0) {
+                    setActiveTab(roleNames[0]);
+                    setFormData(prev => ({ ...prev, role: roleNames[0] }));
+                }
+
+                // Fetch all members
                 const data = await getAllMembers();
                 setAllData(data);
-                filterData('ADMIN', data.admins, searchValue, fromDate, toDate, company);
+
+                if (roleNames.length > 0) {
+                    const dataKey = `${roleNames[0]}s`;
+                    filterData(roleNames[0], data[dataKey] || [], searchValue, fromDate, toDate, company);
+                }
             } catch (error) {
                 console.error('Error fetching data:', error);
-                setError('Failed to fetch members: ' + error.message);
+                setError('Failed to fetch data: ' + error.message);
             }
         };
-        fetchData();
+        fetchRolesAndData();
     }, []);
 
     const handleTabChange = (tab) => {
         setActiveTab(tab);
-        setFormData(prev => ({ ...prev, user_type: tab }));
-        let data;
-        if (tab === 'ADMIN') data = allData.admins;
-        else if (tab === 'API_PARTNER') data = allData.api_partners;
-        else if (tab === 'REGISTERED_USER') data = allData.registered_users;
-        else if (tab === 'DEACTIVATED_USER') data = allData.deactivated_users;
-        filterData(tab, data, searchValue, fromDate, toDate, company);
+        const dataKey = `${tab}s`;
+        filterData(tab, allData[dataKey] || [], searchValue, fromDate, toDate, company);
     };
 
     const filterData = (tab, data, search, from, to, companyFilter) => {
-        let filtered = [...data];
+        let filtered = [...(data || [])];
 
         if (search) {
             filtered = filtered.filter(item =>
@@ -91,12 +94,8 @@ const MemberDetails = () => {
     };
 
     const handleSearch = () => {
-        let data;
-        if (activeTab === 'ADMIN') data = allData.admins;
-        else if (activeTab === 'API_PARTNER') data = allData.api_partners;
-        else if (activeTab === 'REGISTERED_USER') data = allData.registered_users;
-        else if (activeTab === 'DEACTIVATED_USER') data = allData.deactivated_users;
-        filterData(activeTab, data, searchValue, fromDate, toDate, company);
+        const dataKey = `${activeTab}s`;
+        filterData(activeTab, allData[dataKey] || [], searchValue, fromDate, toDate, company);
     };
 
     const handleReset = () => {
@@ -104,26 +103,20 @@ const MemberDetails = () => {
         setFromDate('');
         setToDate('');
         setCompany('');
-        let data;
-        if (activeTab === 'ADMIN') data = allData.admins;
-        else if (activeTab === 'API_PARTNER') data = allData.api_partners;
-        else if (activeTab === 'REGISTERED_USER') data = allData.registered_users;
-        else if (activeTab === 'DEACTIVATED_USER') data = allData.deactivated_users;
-        filterData(activeTab, data, '', '', '', '');
+        const dataKey = `${activeTab}s`;
+        filterData(activeTab, allData[dataKey] || [], '', '', '', '');
     };
 
     const handleExport = () => {
         const csv = [
-            ['#', 'Name', 'Parent Details', 'Company Profile', 'Wallet Details', 'Action'],
+            ['#', 'Name', 'Company Profile', 'Action'],
             ...filteredData.map((item, index) => [
                 index + 1,
                 `${item.name}\n${item.email}\n${item.created_at}`,
-                item.parent || 'N/A',
                 item.company || 'N/A',
-                `Main Wallet: ₹${item.main_wallet || 0}\nCollection Wallet: ₹${item.collection_wallet || 0}\nOR Wallet: ₹${item.or_wallet || 0}\nRR Wallet: ₹${item.rr_wallet || 0}\nLocked Amt: ₹${item.locked_amount || 0}`,
                 '',
             ]),
-            ['#', 'Name', 'Parent Details', 'Company Profile', 'Wallet Details', 'Action'],
+            ['#', 'Name', 'Company Profile', 'Action'],
         ]
             .map(row => row.join(','))
             .join('\n');
@@ -140,15 +133,11 @@ const MemberDetails = () => {
     const handleDelete = async (memberId) => {
         if (window.confirm('Are you sure you want to deactivate this member?')) {
             try {
-                await deleteMember(memberId, activeTab);
+                await deleteMember(memberId);
                 const updatedData = await getAllMembers();
                 setAllData(updatedData);
-                let data;
-                if (activeTab === 'ADMIN') data = updatedData.admins;
-                else if (activeTab === 'API_PARTNER') data = updatedData.api_partners;
-                else if (activeTab === 'REGISTERED_USER') data = updatedData.registered_users;
-                else if (activeTab === 'DEACTIVATED_USER') data = updatedData.deactivated_users;
-                filterData(activeTab, data, searchValue, fromDate, toDate, company);
+                const dataKey = `${activeTab}s`;
+                filterData(activeTab, updatedData[dataKey] || [], searchValue, fromDate, toDate, company);
                 alert('Member deactivated successfully.');
             } catch (error) {
                 setError('Failed to deactivate member: ' + error.message);
@@ -166,29 +155,24 @@ const MemberDetails = () => {
         setError(null);
         setGeneratedPassword(null);
 
+        console.log('Form Data being sent:', formData); // Debug log
+
         try {
             const response = await addMember(formData);
             const updatedData = await getAllMembers();
             setAllData(updatedData);
-            let data;
-            if (activeTab === 'ADMIN') data = updatedData.admins;
-            else if (activeTab === 'API_PARTNER') data = updatedData.api_partners;
-            else if (activeTab === 'REGISTERED_USER') data = updatedData.registered_users;
-            else if (activeTab === 'DEACTIVATED_USER') data = updatedData.deactivated_users;
-            filterData(activeTab, data, searchValue, fromDate, toDate, company);
+            const dataKey = `${activeTab}s`;
+            filterData(activeTab, updatedData[dataKey] || [], searchValue, fromDate, toDate, company);
 
-            // Check if a password was generated and display it
-            if (response.data.generated_password) {
-                setGeneratedPassword(response.data.generated_password);
+            if (response.generated_password) {
+                setGeneratedPassword(response.generated_password);
             }
 
             setFormData({
-                user_type: activeTab,
+                role: roles[0] || '',
                 name: '',
                 email: '',
                 company: '',
-                parent: '',
-                shop_name: '',
                 pancard_number: '',
                 aadhaar_number: '',
                 mobile: '',
@@ -196,8 +180,7 @@ const MemberDetails = () => {
                 state: '',
                 city: '',
                 pincode: '',
-                api_key: '',
-                deactivation_reason: '',
+                otp_verifaction: 0,
             });
             setShowForm(false);
             alert('User added successfully.');
@@ -209,10 +192,25 @@ const MemberDetails = () => {
     if (showForm) {
         return (
             <div className="p-6">
-                <h1 className="text-2xl font-bold mb-4">Home - Create {activeTab.replace('_', ' ')}</h1>
+                <h1 className="text-2xl font-bold mb-4">Home - Create User</h1>
                 <div className="bg-white p-6 rounded-lg shadow-md">
                     <h2 className="text-lg font-semibold mb-4">Member Information</h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700">Role</label>
+                            <select
+                                name="role"
+                                value={formData.role}
+                                onChange={handleFormChange}
+                                className="mt-1 block w-full border border-gray-300 rounded-md p-2"
+                            >
+                                {roles.map(role => (
+                                    <option key={role} value={role}>
+                                        {role.charAt(0).toUpperCase() + role.slice(1)}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
                         <div>
                             <label className="block text-sm font-medium text-gray-700">Name</label>
                             <input
@@ -249,32 +247,10 @@ const MemberDetails = () => {
                                 <option value="Banking NIKAT-By">Banking NIKAT-By</option>
                             </select>
                         </div>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700">Parent</label>
-                            <input
-                                type="text"
-                                name="parent"
-                                value={formData.parent}
-                                onChange={handleFormChange}
-                                className="mt-1 block w-full border border-gray-300 rounded-md p-2"
-                                placeholder="Enter Value"
-                            />
-                        </div>
                     </div>
 
                     <h2 className="text-lg font-semibold mb-4">Business Information</h2>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700">Shop Name</label>
-                            <input
-                                type="text"
-                                name="shop_name"
-                                value={formData.shop_name}
-                                onChange={handleFormChange}
-                                className="mt-1 block w-full border border-gray-300 rounded-md p-2"
-                                placeholder="Enter Value"
-                            />
-                        </div>
                         <div>
                             <label className="block text-sm font-medium text-gray-700">Pancard Number</label>
                             <input
@@ -358,43 +334,6 @@ const MemberDetails = () => {
                         </div>
                     </div>
 
-                    {activeTab === 'API_PARTNER' && (
-                        <>
-                            <h2 className="text-lg font-semibold mb-4">API Information</h2>
-                            <div className="grid grid-cols-1 gap-4 mb-6">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700">API Key</label>
-                                    <input
-                                        type="text"
-                                        name="api_key"
-                                        value={formData.api_key}
-                                        onChange={handleFormChange}
-                                        className="mt-1 block w-full border border-gray-300 rounded-md p-2"
-                                        placeholder="Enter Value"
-                                    />
-                                </div>
-                            </div>
-                        </>
-                    )}
-
-                    {activeTab === 'DEACTIVATED_USER' && (
-                        <>
-                            <h2 className="text-lg font-semibold mb-4">Deactivation Information</h2>
-                            <div className="grid grid-cols-1 gap-4 mb-6">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700">Deactivation Reason</label>
-                                    <textarea
-                                        name="deactivation_reason"
-                                        value={formData.deactivation_reason}
-                                        onChange={handleFormChange}
-                                        className="mt-1 block w-full border border-gray-300 rounded-md p-2"
-                                        placeholder="Enter Reason"
-                                    />
-                                </div>
-                            </div>
-                        </>
-                    )}
-
                     <div className="flex justify-end gap-4">
                         <button
                             onClick={() => setShowForm(false)}
@@ -410,7 +349,6 @@ const MemberDetails = () => {
                         </button>
                     </div>
 
-                    {/* Display the generated password if it exists */}
                     {generatedPassword && (
                         <div className="mt-4 p-4 bg-green-100 text-green-700 rounded">
                             <p><strong>Generated Password:</strong> {generatedPassword}</p>
@@ -419,7 +357,6 @@ const MemberDetails = () => {
                         </div>
                     )}
 
-                    {/* Display error if it exists */}
                     {error && (
                         <div className="mt-4 p-4 bg-red-100 text-red-700 rounded">
                             <p><strong>Error:</strong> {error}</p>
@@ -434,30 +371,15 @@ const MemberDetails = () => {
         <div className="p-6">
             <h1 className="text-2xl font-bold mb-4">Home - Member Details</h1>
             <div className="bg-gray-200 p-2 rounded-t-lg">
-                <button
-                    onClick={() => handleTabChange('ADMIN')}
-                    className={`px-4 py-2 mr-2 rounded-t-lg ${activeTab === 'ADMIN' ? 'bg-yellow-500 text-white' : 'bg-gray-300'}`}
-                >
-                    Admin
-                </button>
-                <button
-                    onClick={() => handleTabChange('API_PARTNER')}
-                    className={`px-4 py-2 mr-2 rounded-t-lg ${activeTab === 'API_PARTNER' ? 'bg-yellow-500 text-white' : 'bg-gray-300'}`}
-                >
-                    API Partner
-                </button>
-                <button
-                    onClick={() => handleTabChange('REGISTERED_USER')}
-                    className={`px-4 py-2 mr-2 rounded-t-lg ${activeTab === 'REGISTERED_USER' ? 'bg-yellow-500 text-white' : 'bg-gray-300'}`}
-                >
-                    Registered User
-                </button>
-                <button
-                    onClick={() => handleTabChange('DEACTIVATED_USER')}
-                    className={`px-4 py-2 rounded-t-lg ${activeTab === 'DEACTIVATED_USER' ? 'bg-yellow-500 text-white' : 'bg-gray-300'}`}
-                >
-                    Deactivated User
-                </button>
+                {roles.map(role => (
+                    <button
+                        key={role}
+                        onClick={() => handleTabChange(role)}
+                        className={`px-4 py-2 mr-2 rounded-t-lg ${activeTab === role ? 'bg-yellow-500 text-white' : 'bg-gray-300'}`}
+                    >
+                        {role.charAt(0).toUpperCase() + role.slice(1)}
+                    </button>
+                ))}
             </div>
 
             <div className="bg-gray-200 p-4 rounded-b-lg">
@@ -517,12 +439,12 @@ const MemberDetails = () => {
 
             <div className="bg-white p-4 rounded-lg shadow-md mt-4">
                 <div className="flex items-center justify-between mb-4">
-                    <h2 className="text-lg font-semibold">{activeTab.replace('_', ' ')} List</h2>
+                    <h2 className="text-lg font-semibold">{activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} List</h2>
                     <button
                         onClick={() => setShowForm(true)}
                         className="px-4 py-2 bg-blue-600 text-white rounded"
                     >
-                        + Add New
+                        + Add User
                     </button>
                 </div>
 
@@ -537,13 +459,7 @@ const MemberDetails = () => {
                                     Name
                                 </th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Parent Details
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Company Profile
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Wallet Details
                                 </th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Action
@@ -565,34 +481,20 @@ const MemberDetails = () => {
                                             {item.created_at}
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                            {item.parent || 'N/A'}
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                             {item.company || 'N/A'}
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                            Main Wallet: ₹{item.main_wallet || 0}
-                                            <br />
-                                            Collection Wallet: ₹{item.collection_wallet || 0}
-                                            <br />
-                                            OR Wallet: ₹{item.or_wallet || 0}
-                                            <br />
-                                            RR Wallet: ₹{item.rr_wallet || 0}
-                                            <br />
-                                            Locked Amt: ₹{item.locked_amount || 0}
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                             <select
                                                 className="border border-gray-300 rounded-md p-1"
                                                 onChange={(e) => {
                                                     if (e.target.value === 'action') return;
-                                                    if (e.target.value === 'delete' && (activeTab === 'ADMIN' || activeTab === 'API_PARTNER' || activeTab === 'REGISTERED_USER')) {
+                                                    if (e.target.value === 'delete' && activeTab !== 'deactivated') {
                                                         handleDelete(item.id);
                                                     }
                                                 }}
                                             >
                                                 <option value="action">Action</option>
-                                                {(activeTab === 'ADMIN' || activeTab === 'API_PARTNER' || activeTab === 'REGISTERED_USER') && <option value="delete">Deactivate</option>}
+                                                {activeTab !== 'deactivated' && <option value="delete">Deactivate</option>}
                                                 <option value="reports">Reports</option>
                                             </select>
                                         </td>
@@ -600,7 +502,7 @@ const MemberDetails = () => {
                                 ))
                             ) : (
                                 <tr>
-                                    <td colSpan="6" className="px-6 py-4 text-center text-sm text-gray-500">
+                                    <td colSpan="4" className="px-6 py-4 text-center text-sm text-gray-500">
                                         No Data Available in Table
                                     </td>
                                 </tr>

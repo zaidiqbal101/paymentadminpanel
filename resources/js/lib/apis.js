@@ -3,7 +3,7 @@ import axios from 'axios';
 // Define the base URL based on the environment
 const BASE_URL = import.meta.env.VITE_APP_SERVER === "PRODUCTION" 
     ? "https://uat.nikatby.in/admin/public" 
-    : "http://127.0.0.1:8000/";
+    : "http://127.0.0.1:8000";
 
 // Ensure cookies are sent with requests (for session-based authentication)
 axios.defaults.withCredentials = true;
@@ -412,3 +412,36 @@ export const updateCommissions = async (userId, commissions) => {
         throw new Error(error.response?.data?.error || 'Failed to update commissions');
     }
 };
+
+
+//bankdetails
+
+export const getAllBankDetails = async () => {
+    try {
+        const response = await axios.post(`${BASE_URL}/admin/bank/fetchbankdetails`);
+        return response.data.data;
+    } catch (error) {
+        console.error('Error fetching members:', error);
+        throw error;
+    }
+};
+
+export const activateBank = async (bankId) => {
+    try {
+      const response = await axios.post(`${BASE_URL}/admin/bank/activate`, { id: bankId });
+      return response.data;
+    } catch (error) {
+      console.error('Error activating bank:', error);
+      throw error;
+    }
+  };
+  
+  export const deactivateBank = async (bankId) => {
+    try {
+      const response = await axios.post(`${BASE_URL}/admin/bank/deactivate`, { id: bankId });
+      return response.data;
+    } catch (error) {
+      console.error('Error deactivating bank:', error);
+      throw error;
+    }
+  };
