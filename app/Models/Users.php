@@ -12,4 +12,10 @@ class ApiPartner extends Model
         'aadhaar_number', 'mobile', 'address', 'state', 'city', 'pincode', 'role', 'otp_verifaction',
         'created_at', 'updated_at'
     ];
+       // ✅ Relationship with PaymentRequest
+       public function paymentRequests()
+       {
+           return $this->hasMany(PaymentRequest::class, 'user_id');
+       }
+   
 }

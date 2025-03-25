@@ -58,7 +58,7 @@ class MemberController extends Controller
         Log::info('Role names for validation:', ['roleNames' => $roleNames]);
     
         $validated = $request->validate([
-            'role' => 'required|in:' . implode(',', $roleNames),
+            'role' => 'required|int|max:10',
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
             'company' => 'nullable|string|max:255',
@@ -75,23 +75,23 @@ class MemberController extends Controller
             // Create a copy of the request data
             $data = $request->all();
             
-            // Find role ID by name
-            $role = Roles::whereRaw('LOWER(name) = ?', [strtolower($validated['role'])])->first();
+            // // Find role ID by name
+            // $role = Roles::whereRaw('LOWER(name) = ?', [strtolower($validated['role'])])->first();
             
-            if (!$role) {
-                Log::warning('Invalid role selected, defaulting to role ID 0', ['role' => $validated['role']]);
-                $roleId = 0; // Default role ID if mapping fails
-            } else {
-                $roleId = $role->id;
-                Log::info('Mapped role ID:', ['role_id' => $roleId]);
-            }
+            // if (!$role) {
+            //     Log::warning('Invalid role selected, defaulting to role ID 0', ['role' => $validated['role']]);
+            //     $roleId = 0; // Default role ID if mapping fails
+            // } else {
+            //     $roleId = $role->id;
+            //     Log::info('Mapped role ID:', ['role_id' => $roleId]);
+            // }
             
-            // Explicitly set the role ID in the data array
-            $data['role'] = $roleId;
+            // // Explicitly set the role ID in the data array
+            // $data['role'] = $roleId;
             
             $generatedPassword = null;
     
-            if ($validated['role'] !== 'deactivated') {
+            if ($validated['status'] !== '0') {
                 $generatedPassword = Str::upper(Str::random(4)) . rand(1000, 9999) . Str::upper(Str::random(4));
                 $data['password'] = Hash::make($generatedPassword);
             }

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 use Inertia\Inertia;
 use App\Models\BankDetails;
+use App\Models\PaymentRequest ;
 
 use Illuminate\Http\Request;
 
@@ -56,5 +57,29 @@ class BankController extends Controller
         return response()->json(['message' => 'Bank deactivated successfully']);
     }
     
+    public function getAllPaymentRequests()
+    {
+        $requests = PaymentRequest::with(['user', 'bank'])->where('status', 0)->get();
+    
+        return response()->json($requests);
+    }
+    
 
+    public function approvePaymentRequest($id)
+    {
+        $request = PaymentRequest::findOrFail($id);
+        $request->status = 1;
+        $request->save();
+
+        return response()->json(['message' => 'Payment request approved successfully']);
+    }
+
+    public function disapprovePaymentRequest($id)
+    {
+        $request = PaymentRequest::findOrFail($id);
+        $request->status = 0;
+        $request->save();
+
+        return response()->json(['message' => 'Payment request disapproved successfully']);
+    }
 }

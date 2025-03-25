@@ -137,4 +137,16 @@ Route::post('/admin/utilities/municipality-payment-data',[UtilitiesController::c
 
 
 
+    // Wallet and Credit Balance Routes
+    Route::get('/admin/wallet-balance', [AdminController::class, 'getWalletBalance'])
+         ->name('admin.wallet-balance');
+    
+    Route::get('/admin/credit-balance', [AdminController::class, 'getCreditBalance'])
+         ->name('admin.credit-balance');
+
+//payment requests 
+Route::get('/payment-requests', [BankController::class, 'getAllPaymentRequests'])->name('payment.requests');
+Route::post('/payment-requests/{id}/approve', [BankController::class, 'approvePaymentRequest'])->name('payment.approve');
+Route::post('/payment-requests/{id}/disapprove', [BankController::class, 'disapprovePaymentRequest'])->name('payment.disapprove');
+
 require __DIR__.'/auth.php';

@@ -413,7 +413,6 @@ export const updateCommissions = async (userId, commissions) => {
     }
 };
 
-
 //bankdetails
 
 export const getAllBankDetails = async () => {
@@ -436,12 +435,85 @@ export const activateBank = async (bankId) => {
     }
   };
   
-  export const deactivateBank = async (bankId) => {
+export const deactivateBank = async (bankId) => {
     try {
       const response = await axios.post(`${BASE_URL}/admin/bank/deactivate`, { id: bankId });
       return response.data;
     } catch (error) {
       console.error('Error deactivating bank:', error);
+      throw error;
+    }
+  };
+
+export const balanceApi = {
+    /**
+     * Fetch wallet balance
+     * @returns {Promise<{success: boolean, balance: number, message?: string}>}
+     */
+    getWalletBalance: async () => {
+      try {
+        const response = await axios.get(route('admin.wallet-balance'));
+        return response.data;
+      } catch (error) {
+        console.error('Wallet Balance Fetch Error:', error);
+        return {
+          success: false,
+          balance: null,
+          message: error.response?.data?.message || 'Failed to fetch wallet balance'
+        };
+      }
+    },
+  
+    /**
+     * Fetch credit balance
+     * @returns {Promise<{success: boolean, balance: number, message?: string}>}
+     */
+    getCreditBalance: async () => {
+      try {
+        const response = await axios.get(route('admin.credit-balance'));
+    return response.data;
+      } catch (error) {
+        console.error('Credit Balance Fetch Error:', error);
+        return {
+          success: false,
+          balance: null,
+          message: error.response?.data?.message || 'Failed to fetch credit balance'
+        };
+      }
+    }
+}
+
+
+
+  
+  // New functions for payment requests
+  export const getAllPaymentRequests = async () => {
+    try {
+      const response = await axios.get('/payment-requests'); // No baseURL
+      console.log(response.data);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching payment requests:', error);
+      throw error;
+    }
+  };
+  
+  export const approvePaymentRequest = async (requestId) => {
+    try {
+      const response = await axios.post(`/payment-requests/${requestId}/approve`); // Exact route
+      return response.data;
+    } catch (error) {
+      console.error(`Error approving payment request ${requestId}:`, error);
+      throw error;
+    }
+  };
+  
+  export const disapprovePaymentRequest = async (requestId) => {
+    try {
+      const response = await axios.post(`/payment-requests/${requestId}/disapprove`); // Exact route
+      return response.data;
+    } catch (error) {
+      console.error(`Error disapproving payment request ${requestId}:`, error);
       throw error;
     }
   };

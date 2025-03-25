@@ -15,6 +15,7 @@ class BankDetails extends Model
 
 
     protected $table = 'addaccount';
+    
     protected $fillable = [
         'bank', 'account_name', 'account_number', 'confirm_account_number', 'ifsc_code', 'status',
         'created_at', 'updated_at',
@@ -24,4 +25,9 @@ class BankDetails extends Model
         {
             return $this->belongsTo(User::class, 'userid');
         }
+            // ✅ Relationship with PaymentRequest (if needed)
+    public function paymentRequests()
+    {
+        return $this->hasMany(PaymentRequest::class, 'bank_id');
+    }
 }

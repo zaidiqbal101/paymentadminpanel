@@ -9,7 +9,9 @@ use App\Models\RechargeCommission;
 use App\Models\UtilityCommission;
 use App\Models\CMSCommission;
 use App\Models\GasFastagCommission;
+use Illuminate\Support\Facades\Http;
 use App\Models\BankCommission;
+use App\Http\Controllers\Jwt;
 use Illuminate\Http\Request;
 
 class adminController extends Controller
@@ -226,5 +228,76 @@ class adminController extends Controller
         $commission->update($updatedFields);
 
         return response()->json(['message' => 'Commission updated successfully']);
+    }
+
+    private $partnerId = 'PS005962';
+    private $secretKey = 'UFMwMDU5NjJjYzE5Y2JlYWY1OGRiZjE2ZGI3NThhN2FjNDFiNTI3YTE3NDA2NDkxMzM=';
+ 
+    private function generateJwtToken($requestId)
+    {
+        $timestamp = time();
+        $payload = [
+            'timestamp' => $timestamp,
+            'partnerId' => $this->partnerId,
+            'reqid' => $requestId
+        ];
+ 
+        return Jwt::encode($payload, $this->secretKey, 'HS256');
+    }
+ 
+
+    public function getWalletBalance()
+    {
+        $requestId = time() . rand(1000, 9999);
+        $jwtToken = $this->generateJwtToken($requestId);
+       
+        try {
+            $response = Http::withHeaders([
+                'Token' => $jwtToken,
+                'User-Agent' => $this->partnerId,
+                'accept' => 'application/json',
+                'Content-Type' => 'application/json',
+            ])->post('https://api.paysprint.in/api/v1/service/balance/balance/cashbalance');
+           
+            return response()->json([
+                'success' => true,
+                'balance' => $response->json('cdwallet') ?? 0,
+                'message' => 'Wallet balance retrieved successfully'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'balance' => null,
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+    
+    public function getCreditBalance()
+    {
+        $requestId = time() . rand(1000, 9999);
+        $jwtToken = $this->generateJwtToken($requestId);
+       
+        try {
+            $response = Http::withHeaders([
+                'Token' => $jwtToken,
+                'Authorisedkey' => 'Y2RkZTc2ZmNjODgxODljMjkyN2ViOTlhM2FiZmYyM2I=',
+                'User-Agent' => $this->partnerId,
+                'accept' => 'application/json',
+                'Content-Type' => 'application/json',
+            ])->post('https://sit.paysprint.in/service-api/api/v1/service/balance/balance/mainbalance');
+           
+            return response()->json([
+                'success' => true,
+                'balance' => $response->json('data.balance') ?? 0,
+                'message' => 'Credit balance retrieved successfully'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'balance' => null,
+                'message' => $e->getMessage()
+            ], 500);
+        }
     }
 }
