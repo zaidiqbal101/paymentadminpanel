@@ -11,8 +11,9 @@ use App\Http\Controllers\MemberController;
 use App\Http\Controllers\BankController;
 use App\Http\Controllers\CMSController;
 use Illuminate\Foundation\Application;
-use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Route;
+
 
 Route::get('/',[AdminController::class,'dashboard'])->name('admin.recharge');
 
@@ -150,3 +151,8 @@ Route::post('/payment-requests/{id}/approve', [BankController::class, 'approvePa
 Route::post('/payment-requests/{id}/disapprove', [BankController::class, 'disapprovePaymentRequest'])->name('payment.disapprove');
 
 require __DIR__.'/auth.php';
+
+
+Route::get('/admin/fund/request', function () {
+    return Inertia::render('Admin/fundRequest'); // Replace with your actual component name
+});
