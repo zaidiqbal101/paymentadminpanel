@@ -12,10 +12,15 @@ use App\Http\Controllers\BankController;
 use App\Http\Controllers\CMSController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AdminUtilityOperatorController;
 use Inertia\Inertia;
 
 Route::get('/',[AdminController::class,'dashboard'])->name('admin.recharge');
 
+Route::middleware(['auth'])->prefix('admin')->group(function () {
+    Route::get('/utility-operators', [AdminUtilityOperatorController::class, 'index'])->name('admin.utility-operators.index');
+    Route::post('/utility-operators/{id}/toggle-status', [AdminUtilityOperatorController::class, 'toggleStatus'])->name('admin.utility-operators.toggle-status');
+});
 
 
 

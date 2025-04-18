@@ -82,8 +82,7 @@ export const sidebarRoutes = [
           title: "Fastag Recharge",
           path: `${BASE_URL}/admin/utilities/fastag-recharge`,
           permissions: ["admin"],
-        }
-        ,
+        },
         {
           id: "utilities-lpgbooking",
           title: "LPG Booking and Payment",
@@ -141,6 +140,13 @@ export const sidebarRoutes = [
       title: "Bank Details",
       path: `${BASE_URL}/admin/bank`,
       icon: <CalendarRange  />,
+      permissions: ["admin"],
+    },
+    {
+      id: "billpaymentactiveinactive",
+      title: "Operators Management",
+      path: `${BASE_URL}/admin/utility-operators`, 
+      icon: <CalendarRange />,
       permissions: ["admin"],
     }
   ];
