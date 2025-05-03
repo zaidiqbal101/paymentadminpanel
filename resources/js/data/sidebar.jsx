@@ -148,5 +148,13 @@ export const sidebarRoutes = [
       path: `${BASE_URL}/admin/utility-operators`, 
       icon: <CalendarRange />,
       permissions: ["admin"],
-    }
+    },
+  // Add this to your sidebarRoutes array
+{
+  id: "ipwhitelisting",
+  title: "IP Whitelisting",
+  path: `${BASE_URL}/admin/ip-whitelisting`,
+  icon: <CalendarRange />, // Using Shield icon for security feature
+  permissions: ["admin"],
+}
   ];

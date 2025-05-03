@@ -10,6 +10,8 @@ use App\Http\Controllers\CommissionController;
 use App\Http\Controllers\MemberController;
 use App\Http\Controllers\BankController;
 use App\Http\Controllers\CMSController;
+use App\Http\Controllers\IpWhitelistController;
+use App\Http\Controllers\AuthController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdminUtilityOperatorController;
@@ -149,9 +151,21 @@ Route::post('/admin/utilities/municipality-payment-data',[UtilitiesController::c
     Route::get('/admin/credit-balance', [AdminController::class, 'getCreditBalance'])
          ->name('admin.credit-balance');
 
+      
 //payment requests 
 Route::get('/payment-requests', [BankController::class, 'getAllPaymentRequests'])->name('payment.requests');
 Route::post('/payment-requests/{id}/approve', [BankController::class, 'approvePaymentRequest'])->name('payment.approve');
 Route::post('/payment-requests/{id}/disapprove', [BankController::class, 'disapprovePaymentRequest'])->name('payment.disapprove');
 
+//ipwhitelist
+Route::get('/admin/ip-whitelisting', [IpWhitelistController::class, 'index'])->name('admin.ip-whitelisting');
+
+Route::prefix('admin')->group(function () {
+    Route::get('/ip-whitelist', [IpWhitelistController::class, 'index'])->name('ip-whitelist.index');
+    Route::post('/ip-whitelist/{id}/status', [IpWhitelistController::class, 'updateStatus'])->name('ip-whitelist.updateStatus');
+    Route::put('/ip-whitelist/{id}', [IpWhitelistController::class, 'update'])->name('ip-whitelist.update');
+    Route::delete('/ip-whitelist/{id}', [IpWhitelistController::class, 'destroy'])->name('ip-whitelist.destroy');
+});
+
 require __DIR__.'/auth.php';
+
