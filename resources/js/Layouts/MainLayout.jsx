@@ -23,18 +23,10 @@ export default function MainLayout({ children }) {
         </div>
 
         {/* Animated Main Content with Proper Padding */}
-        <div className="p-6 w-full">
+        <div className=" w-full">
           <AnimatePresence mode="wait">
-            <motion.div
-              key={url} // Triggers animation when route changes
-              initial={{ opacity: 0, x: 50, filter: "blur(10px)" }} // Start blurred and shifted right
-              animate={{ opacity: 1, x: 0, filter: "blur(0px)" }} // Fade in and move to position
-              exit={{ opacity: 0, x: -50, filter: "blur(10px)" }} // Fade out and move left
-              transition={{ duration: 0.9, ease: "easeInOut" }}
-              className="w-full"
-            >
+           
               {children}
-            </motion.div>
           </AnimatePresence>
         </div>
       </div>

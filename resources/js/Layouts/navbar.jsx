@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Bell, Search, User, Wallet, CreditCard } from 'lucide-react';
+import { Bell, Search, User, Wallet, CreditCard, LogOut } from 'lucide-react';
 import { balanceApi } from '@/lib/apis';
+import axios from 'axios';
 
 const Navbar = () => {
   const [walletBalance, setWalletBalance] = useState(null);
@@ -15,8 +16,6 @@ const Navbar = () => {
       try {
         setIsLoadingWallet(true);
         const result = await balanceApi.getWalletBalance();
-        // console.log(result);
-        
         if (result.success) {
           setWalletBalance(result.balance);
         } else {
@@ -40,17 +39,15 @@ const Navbar = () => {
       try {
         setIsLoadingCredit(true);
         const result = await balanceApi.getCreditBalance();
-        // console.log(result);
-        
         if (result.success) {
           setCreditBalance(result.balance);
         } else {
           setCreditBalance('Error');
-          // console.error('Credit Balance Error:', result.message);
+          console.error('Credit Balance Error:', result.message);
         }
       } catch (error) {
         setCreditBalance('Error');
-        // console.error('Credit Balance Fetch Error:', error);
+        console.error('Credit Balance Fetch Error:', error);
       } finally {
         setIsLoadingCredit(false);
       }
@@ -58,6 +55,21 @@ const Navbar = () => {
 
     fetchCreditBalance();
   }, []);
+
+  // Handle logout
+  const handleLogout = async () => {
+    try {
+      await axios.post('/logout', {}, {
+        headers: {
+          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content'),
+        },
+      });
+      window.location.href = '/login';
+    } catch (error) {
+      console.error('Logout Error:', error);
+      alert('Failed to log out. Please try again.');
+    }
+  };
 
   // Helper function to format balance
   const formatBalance = (balance) => {
@@ -89,7 +101,7 @@ const Navbar = () => {
               type="text"
               placeholder="Search..."
               className="pl-10 pr-4 py-2 rounded-md border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent w-full sm:w-64"
-              onBlur={() => setIsSearchOpen(false)} // Close on mobile when losing focus
+              onBlur={() => setIsSearchOpen(false)}
             />
           </div>
         </div>
@@ -135,6 +147,15 @@ const Navbar = () => {
             <p className="text-xs text-gray-500">Administrator</p>
           </div>
         </div>
+
+        {/* Logout Button */}
+        <button
+          onClick={handleLogout}
+          className="p-2 rounded-full hover:bg-gray-100 flex-shrink-0"
+          title="Logout"
+        >
+          <LogOut className="h-5 w-5 text-gray-500" />
+        </button>
       </div>
     </header>
   );

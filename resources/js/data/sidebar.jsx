@@ -9,7 +9,7 @@ export const sidebarRoutes = [
     {
       id: "dashboard",
       title: "Dashboard",
-      path: "/",
+      path: `${BASE_URL}/admin`,
       permissions: ["admin"],
     },
     {
