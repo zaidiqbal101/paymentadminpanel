@@ -9,6 +9,9 @@ const Navbar = () => {
   const [isLoadingWallet, setIsLoadingWallet] = useState(true);
   const [isLoadingCredit, setIsLoadingCredit] = useState(true);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const BASE_URL = import.meta.env.VITE_APP_SERVER === "PRODUCTION" 
+  ? "https://uat.nikatby.in/admin/public" 
+  : "http://127.0.0.1:8000";
 
   // Fetch wallet balance
   useEffect(() => {
@@ -59,7 +62,7 @@ const Navbar = () => {
   // Handle logout
   const handleLogout = async () => {
     try {
-      await axios.post('/logout', {}, {
+      await axios.post(`${BASE_URL}/logout`, {}, {
         headers: {
           'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content'),
         },

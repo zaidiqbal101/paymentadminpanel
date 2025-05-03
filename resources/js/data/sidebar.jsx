@@ -1,6 +1,9 @@
 import { 
   HandCoins, BatteryCharging, ShieldCheck, Banknote, CreditCard, 
-  Drill, CalendarRange, Cog, Users, Phone, GlobeLock 
+  Drill, CalendarRange, Cog, Users, Phone, GlobeLock, 
+  ChartPie,
+  Code,
+  Building
 } from 'lucide-react';
 
 console.log(import.meta.env.VITE_APP_SERVER);
@@ -14,7 +17,7 @@ export const sidebarRoutes = [
     {
       id: "dashboard",
       title: "Dashboard",
-      path: "/",
+      path: `${BASE_URL}/admin`,
       permissions: ["admin"],
     },
     {
