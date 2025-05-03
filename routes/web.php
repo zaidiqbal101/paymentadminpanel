@@ -10,11 +10,9 @@ use App\Http\Controllers\CommissionController;
 use App\Http\Controllers\MemberController;
 use App\Http\Controllers\BankController;
 use App\Http\Controllers\CMSController;
-use App\Http\Controllers\IpWhitelistController;
-use App\Http\Controllers\AuthController;
-use App\Http\Controllers\AdminUtilityOperatorController;
+use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
+
 
 // Public Routes (No admin prefix)
 Route::get('/login', function () {
@@ -132,16 +130,4 @@ Route::middleware('auth:web')->prefix('admin')->group(function () {
     Route::post('/payment-requests/{id}/approve', [BankController::class, 'approvePaymentRequest'])->name('admin.payment.approve');
     Route::post('/payment-requests/{id}/disapprove', [BankController::class, 'disapprovePaymentRequest'])->name('admin.payment.disapprove');
 
-    // IP Whitelist Routes
-    Route::get('/ip-whitelist', [IpWhitelistController::class, 'index'])->name('admin.ip-whitelist.index');
-    Route::post('/ip-whitelist/{id}/status', [IpWhitelistController::class, 'updateStatus'])->name('admin.ip-whitelist.status');
-    Route::put('/ip-whitelist/{id}', [IpWhitelistController::class, 'update'])->name('admin.ip-whitelist.update');
-    Route::delete('/ip-whitelist/{id}', [IpWhitelistController::class, 'destroy'])->name('admin.ip-whitelist.destroy');
-
-    // Utility Operators Routes
-    Route::get('/utility-operators', [AdminUtilityOperatorController::class, 'index'])->name('admin.utility-operators.index');
-    Route::post('/utility-operators/{id}/toggle-status', [AdminUtilityOperatorController::class, 'toggleStatus'])->name('admin.utility-operators.toggle-status');
-});
-
-// Authentication Routes
-// require __DIR__.'/auth.php';
+require __DIR__.'/auth.php';
