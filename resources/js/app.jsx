@@ -16,16 +16,16 @@ createInertiaApp({
             import.meta.glob("./Pages/**/*.jsx")
         );
 
-        // Apply MainLayout only if the page is not 'Welcome'
-        if (name !== 'Welcome') {
+        if (!name.toLowerCase().includes('login')) {
             page.default.layout = page.default.layout || ((page) => <MainLayout>{page}</MainLayout>);
         }
+
+        
 
         return page;
     },
     setup({ el, App, props }) {
         const root = createRoot(el);
-
         root.render(<App {...props} />);
     },
     progress: {

@@ -188,17 +188,7 @@ const walletData = {
 
   return (
     <div className="bg-gray-100 min-h-screen">
-      <div className="container mx-auto p-4">
-      <div className="flex gap-4 mb-6">
-        <DatePicker onChange={setDateRange} placeholder="Select Date Range" />
-        <Input
-          placeholder="Search..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
-        <Button>Search</Button>
-      </div>
-              {/* Summary Boxes */}
+      <div className=" mx-auto p-4">
       <div className="bg-white p-4 rounded-lg mb-6 shadow">
       <div className="flex justify-between items-center">
         {summaryData.map((item, index) => (

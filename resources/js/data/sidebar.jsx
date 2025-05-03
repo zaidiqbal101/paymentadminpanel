@@ -1,15 +1,23 @@
+import { 
+  HandCoins, BatteryCharging, ShieldCheck, Banknote, CreditCard, 
+  Drill, CalendarRange, Cog, Users, Phone, GlobeLock, 
+  ChartPie,
+  Code,
+  Building
+} from 'lucide-react';
 
-import {ChartPie,Phone,Antenna,Bus,Cog,Building,Code,Drill,CalendarRange  }  from 'lucide-react';
 console.log(import.meta.env.VITE_APP_SERVER);
-const BASE_URL = import.meta.env.VITE_APP_SERVER === "PRODUCTION" ? "https://uat.nikatby.in/admin/public" : "http://127.0.0.1:8000"
-console.log(BASE_URL);
+const BASE_URL = import.meta.env.VITE_APP_SERVER === "PRODUCTION" 
+  ? "https://uat.nikatby.in/admin/public" 
+  : "http://127.0.0.1:8000";
 
+console.log(BASE_URL);
 
 export const sidebarRoutes = [
     {
       id: "dashboard",
       title: "Dashboard",
-      path: "/",
+      path: `${BASE_URL}/admin`,
       permissions: ["admin"],
     },
     {
@@ -82,7 +90,8 @@ export const sidebarRoutes = [
           title: "Fastag Recharge",
           path: `${BASE_URL}/admin/utilities/fastag-recharge`,
           permissions: ["admin"],
-        },
+        }
+        ,
         {
           id: "utilities-lpgbooking",
           title: "LPG Booking and Payment",
@@ -141,20 +150,5 @@ export const sidebarRoutes = [
       path: `${BASE_URL}/admin/bank`,
       icon: <CalendarRange  />,
       permissions: ["admin"],
-    },
-    {
-      id: "billpaymentactiveinactive",
-      title: "Operators Management",
-      path: `${BASE_URL}/admin/utility-operators`, 
-      icon: <CalendarRange />,
-      permissions: ["admin"],
-    },
-  // Add this to your sidebarRoutes array
-{
-  id: "ipwhitelisting",
-  title: "IP Whitelisting",
-  path: `${BASE_URL}/admin/ip-whitelisting`,
-  icon: <CalendarRange />, // Using Shield icon for security feature
-  permissions: ["admin"],
-}
+    }
   ];

@@ -10,7 +10,7 @@ axios.defaults.withCredentials = true;
 
 // Recharge APIs
 export const OperatorList = async () => {
-    const operatorList = await axios.post(`${BASE_URL}/admin/recharge`);
+    const operatorList = await axios.post(`${BASE_URL}/admin/recharge/operators`);
     return operatorList;
 };
 
@@ -304,7 +304,7 @@ export async function getdmtbank2data() {
 
 export async function getlicdata() {
     try {
-        const res = await axios.post(`${BASE_URL}/admin/licdata`);
+        const res = await axios.post(`${BASE_URL}/admin/lic_data`);
         return res.data.data;
     } catch (error) {
         console.error('Error fetching roles:', error.response?.data || error.message);
